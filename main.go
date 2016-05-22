@@ -12,29 +12,38 @@ var HEALTHCHECK_TIMEOUT time.Duration = 3 * time.Second
 var HEALTHCHECK_SERVICE_TIMEOUT time.Duration = 1 * time.Second
 
 func AddHealthCheckHandler(server *grpc.Server, checks []HealthCheckService) {
-	checker := HealthChecker{checks, make(map[string]*checkResponse)}
+	checkList := make([]*HealthCheckService, 0)
+	for _, c := range checks {
+		cc := c
+		checkList = append(checkList, &cc)
+	}
+
+	checker := healthChecker{checkList, make([]*checkResponse, 0), sync.Mutex{}}
 
 	RegisterLightCheckServer(server, checker)
 }
 
-type HealthChecker struct {
-	checkers  []HealthCheckService
-	responses map[string]*checkResponse
+type healthChecker struct {
+	checkers		[]*HealthCheckService
+	responses 		[]*checkResponse
+	runningMutex 	sync.Mutex
 }
 
 type HealthCheckService struct {
 	Name      string
 	CheckFunc func() (*ServiceDependancy, error)
+	Required  bool
 }
 
 type checkResponse struct {
-	Name     string
+	Check    *HealthCheckService
 	Response *ServiceDependancy
 	Error    error
 }
 
-func (h HealthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
-
+func (h healthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
+	h.runningMutex.Lock()
+	h.responses = make([]*checkResponse, 0)
 	checkerCount := len(h.checkers)
 
 	resp := HealthCheckResponse{}
@@ -44,8 +53,10 @@ func (h HealthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*Healt
 	resp.Message = &msg
 	respChan := make(chan checkResponse, checkerCount)
 
+	defer h.runningMutex.Unlock()
+
 	for _, f := range h.checkers {
-		tempCheck := f
+		tempCheck := *f
 		go func() {
 			done := false
 			doneMutex := sync.Mutex{}
@@ -53,7 +64,7 @@ func (h HealthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*Healt
 				res, err := tempCheck.CheckFunc()
 				doneMutex.Lock()
 				if !done {
-					respChan <- checkResponse{tempCheck.Name, res, err}
+					respChan <- checkResponse{&tempCheck, res, err}
 					done = true
 				}
 				doneMutex.Unlock()
@@ -64,7 +75,7 @@ func (h HealthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*Healt
 				if !done {
 					msg := "WE TIMED OUT"
 					downStatus := ServiceStatus_DOWN
-					respChan <- checkResponse{tempCheck.Name, &ServiceDependancy{&tempCheck.Name, &msg, &downStatus, nil}, fmt.Errorf("Timed out waiting for something")}
+					respChan <- checkResponse{&tempCheck, &ServiceDependancy{&tempCheck.Name, &msg, &downStatus, nil}, fmt.Errorf("Timed out waiting for something")}
 					done = true
 				}
 				doneMutex.Unlock()
@@ -78,7 +89,7 @@ func (h HealthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*Healt
 		select {
 		case res := <-respChan:
 			responses = append(responses, res.Response)
-			if *res.Response.Status == ServiceStatus_DOWN || *res.Response.Status == ServiceStatus_DEGRADED {
+			if res.Check.Required && (*res.Response.Status == ServiceStatus_DOWN || *res.Response.Status == ServiceStatus_DEGRADED) {
 				status = ServiceStatus_DEGRADED
 			}
 		case <-time.After(HEALTHCHECK_TIMEOUT):

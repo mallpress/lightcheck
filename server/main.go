@@ -22,7 +22,7 @@ func main() {
 	svc0 := lightcheck.HealthCheckService{"Something to timeout", func() (*lightcheck.ServiceDependancy, error) {
 		time.Sleep(5 * time.Second)
 		return nil, nil
-	}}
+	}, false}
 
 	toUse := make([]lightcheck.HealthCheckService, 0)
 	toUse = append(toUse, svc0)
@@ -33,7 +33,7 @@ func main() {
 		status := lightcheck.ServiceStatus_UP
 		dp := lightcheck.ServiceDependancy{&name, &msg, &status, nil}
 		return &dp, nil
-	}}
+	}, true}
 
 	toUse = append(toUse, svc1)
 
