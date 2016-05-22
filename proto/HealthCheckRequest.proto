@@ -1,0 +1,28 @@
+syntax = "proto2";
+
+package lightcheck;
+
+service LightCheck {
+    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {}
+}
+
+message HealthCheckRequest {
+}
+
+message HealthCheckResponse {
+    required string        message = 1;
+    required ServiceStatus status = 2 [ default = DOWN ];
+    repeated ServiceDependancy dependancies = 3;
+}
+
+message ServiceDependancy {
+    required string        name = 1;
+    required string        message = 2;
+    required ServiceStatus status = 3 [ default = DOWN ];
+}
+
+enum ServiceStatus {
+    UP = 0;
+    DOWN = 2;
+    DEGRADED = 3;
+}
