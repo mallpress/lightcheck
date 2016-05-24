@@ -105,9 +105,9 @@ func (h healthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*Healt
 				msg = *res.Response.Message
 			} else {
 				responses = append(responses, res.Response)
-			}
-			if (res.Check != h.primaryCheck) && (res.Check.Required && (*res.Response.Status == ServiceStatus_DOWN || *res.Response.Status == ServiceStatus_DEGRADED)) {
-				status = ServiceStatus_DEGRADED
+				if res.Check.Required && status == ServiceStatus_UP && (*res.Response.Status == ServiceStatus_DOWN || *res.Response.Status == ServiceStatus_DEGRADED) {
+					status = ServiceStatus_DEGRADED
+				}
 			}
 		case <-time.After(HEALTHCHECK_TIMEOUT):
 			status = ServiceStatus_DEGRADED
