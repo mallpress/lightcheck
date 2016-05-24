@@ -11,7 +11,7 @@ It is generated from these files:
 It has these top-level messages:
 	HealthCheckRequest
 	HealthCheckResponse
-	ServiceDependancy
+	ServiceDependency
 */
 package lightcheck
 
@@ -82,7 +82,7 @@ func (*HealthCheckRequest) Descriptor() ([]byte, []int) { return fileDescriptor0
 type HealthCheckResponse struct {
 	Message          *string              `protobuf:"bytes,1,req,name=message" json:"message,omitempty"`
 	Status           *ServiceStatus       `protobuf:"varint,2,req,name=status,enum=lightcheck.ServiceStatus,def=2" json:"status,omitempty"`
-	Dependancies     []*ServiceDependancy `protobuf:"bytes,3,rep,name=dependancies" json:"dependancies,omitempty"`
+	Dependencies     []*ServiceDependency `protobuf:"bytes,3,rep,name=dependencies" json:"dependencies,omitempty"`
 	XXX_unrecognized []byte               `json:"-"`
 }
 
@@ -107,52 +107,52 @@ func (m *HealthCheckResponse) GetStatus() ServiceStatus {
 	return Default_HealthCheckResponse_Status
 }
 
-func (m *HealthCheckResponse) GetDependancies() []*ServiceDependancy {
+func (m *HealthCheckResponse) GetDependencies() []*ServiceDependency {
 	if m != nil {
-		return m.Dependancies
+		return m.Dependencies
 	}
 	return nil
 }
 
-type ServiceDependancy struct {
+type ServiceDependency struct {
 	Name             *string        `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
 	Message          *string        `protobuf:"bytes,2,req,name=message" json:"message,omitempty"`
 	Status           *ServiceStatus `protobuf:"varint,3,req,name=status,enum=lightcheck.ServiceStatus,def=2" json:"status,omitempty"`
 	XXX_unrecognized []byte         `json:"-"`
 }
 
-func (m *ServiceDependancy) Reset()                    { *m = ServiceDependancy{} }
-func (m *ServiceDependancy) String() string            { return proto.CompactTextString(m) }
-func (*ServiceDependancy) ProtoMessage()               {}
-func (*ServiceDependancy) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+func (m *ServiceDependency) Reset()                    { *m = ServiceDependency{} }
+func (m *ServiceDependency) String() string            { return proto.CompactTextString(m) }
+func (*ServiceDependency) ProtoMessage()               {}
+func (*ServiceDependency) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
-const Default_ServiceDependancy_Status ServiceStatus = ServiceStatus_DOWN
+const Default_ServiceDependency_Status ServiceStatus = ServiceStatus_DOWN
 
-func (m *ServiceDependancy) GetName() string {
+func (m *ServiceDependency) GetName() string {
 	if m != nil && m.Name != nil {
 		return *m.Name
 	}
 	return ""
 }
 
-func (m *ServiceDependancy) GetMessage() string {
+func (m *ServiceDependency) GetMessage() string {
 	if m != nil && m.Message != nil {
 		return *m.Message
 	}
 	return ""
 }
 
-func (m *ServiceDependancy) GetStatus() ServiceStatus {
+func (m *ServiceDependency) GetStatus() ServiceStatus {
 	if m != nil && m.Status != nil {
 		return *m.Status
 	}
-	return Default_ServiceDependancy_Status
+	return Default_ServiceDependency_Status
 }
 
 func init() {
 	proto.RegisterType((*HealthCheckRequest)(nil), "lightcheck.HealthCheckRequest")
 	proto.RegisterType((*HealthCheckResponse)(nil), "lightcheck.HealthCheckResponse")
-	proto.RegisterType((*ServiceDependancy)(nil), "lightcheck.ServiceDependancy")
+	proto.RegisterType((*ServiceDependency)(nil), "lightcheck.ServiceDependency")
 	proto.RegisterEnum("lightcheck.ServiceStatus", ServiceStatus_name, ServiceStatus_value)
 }
 
@@ -237,12 +237,12 @@ var fileDescriptor0 = []byte{
 	0xd2, 0xe0, 0x14, 0xd2, 0xe7, 0x62, 0x2b, 0x2e, 0x49, 0x2c, 0x29, 0x2d, 0x96, 0x60, 0x02, 0xf2,
 	0xf9, 0x8c, 0x24, 0xf5, 0x10, 0x66, 0xeb, 0x05, 0xa7, 0x16, 0x95, 0x65, 0x26, 0xa7, 0x06, 0x83,
 	0x15, 0x58, 0xb1, 0xb8, 0xf8, 0x87, 0xfb, 0x09, 0x19, 0x73, 0xf1, 0xa4, 0xa4, 0x16, 0xa4, 0xe6,
-	0xa5, 0x24, 0xe6, 0x25, 0x67, 0xa6, 0x16, 0x4b, 0x30, 0x2b, 0x30, 0x6b, 0x70, 0x1b, 0xc9, 0x62,
+	0xa5, 0xa4, 0xe6, 0x25, 0x67, 0xa6, 0x16, 0x4b, 0x30, 0x2b, 0x30, 0x6b, 0x70, 0x1b, 0xc9, 0x62,
 	0xd1, 0xe6, 0x02, 0x53, 0x56, 0xa9, 0x94, 0xcc, 0x25, 0x88, 0x21, 0x28, 0xc4, 0xc3, 0xc5, 0x92,
 	0x97, 0x98, 0x0b, 0x73, 0x08, 0x92, 0xcb, 0x98, 0xd0, 0x5c, 0xc6, 0x4c, 0x94, 0xcb, 0xb4, 0xf4,
 	0xb9, 0x78, 0x51, 0x84, 0x85, 0xd8, 0xb8, 0x98, 0x42, 0x03, 0x04, 0x18, 0x84, 0x38, 0xb8, 0xc0,
 	0x0a, 0x04, 0x98, 0x80, 0x56, 0x72, 0xb8, 0xb8, 0xba, 0x07, 0x39, 0xba, 0xb8, 0xba, 0x08, 0x30,
 	0x1b, 0xc5, 0x71, 0x71, 0xf9, 0x80, 0x8c, 0x04, 0x07, 0x91, 0x50, 0x00, 0x17, 0x37, 0x52, 0x88,
 	0x09, 0xc9, 0x21, 0x5b, 0x87, 0x19, 0xc2, 0x52, 0xf2, 0x38, 0xe5, 0x21, 0x41, 0xad, 0xc4, 0x00,
-	0x08, 0x00, 0x00, 0xff, 0xff, 0x89, 0x82, 0xb1, 0xc3, 0xc1, 0x01, 0x00, 0x00,
+	0x08, 0x00, 0x00, 0xff, 0xff, 0x58, 0xb8, 0x1c, 0x40, 0xc1, 0x01, 0x00, 0x00,
 }

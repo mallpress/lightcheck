@@ -12,10 +12,10 @@ message HealthCheckRequest {
 message HealthCheckResponse {
     required string        message = 1;
     required ServiceStatus status = 2 [ default = DOWN ];
-    repeated ServiceDependancy dependancies = 3;
+    repeated ServiceDependency dependencies = 3;
 }
 
-message ServiceDependancy {
+message ServiceDependency {
     required string        name = 1;
     required string        message = 2;
     required ServiceStatus status = 3 [ default = DOWN ];
