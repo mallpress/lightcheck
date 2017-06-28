@@ -31,7 +31,7 @@ func main() {
 		msg := "ITS WORKING"
 		name := "WORK"
 		status := lightcheck.ServiceStatus_UP
-		dp := lightcheck.ServiceDependency{name, msg, status,  ""}
+		dp := lightcheck.ServiceDependency{name, msg, status,  "", ""}
 		return &dp, nil
 	}, true}
 
@@ -41,7 +41,7 @@ func main() {
 		status := lightcheck.ServiceStatus_DOWN
 		msg := "All quiet on the western front"
 		name := "Main process"
-		dp := lightcheck.ServiceDependency{name, msg, status, ""}
+		dp := lightcheck.ServiceDependency{name, msg, status, "", ""}
 		return &dp, nil
 	}, toUse}
 
