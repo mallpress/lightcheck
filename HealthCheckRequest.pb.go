@@ -19,11 +19,6 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
-import (
-	context "golang.org/x/net/context"
-	grpc "google.golang.org/grpc"
-)
-
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
@@ -31,7 +26,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.ProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type ServiceStatus int32
 
@@ -52,27 +49,12 @@ var ServiceStatus_value = map[string]int32{
 	"DEGRADED": 3,
 }
 
-func (x ServiceStatus) Enum() *ServiceStatus {
-	p := new(ServiceStatus)
-	*p = x
-	return p
-}
 func (x ServiceStatus) String() string {
 	return proto.EnumName(ServiceStatus_name, int32(x))
-}
-func (x *ServiceStatus) UnmarshalJSON(data []byte) error {
-	value, err := proto.UnmarshalJSONEnum(ServiceStatus_value, data, "ServiceStatus")
-
-	if err != nil {
-		return err
-	}
-	*x = ServiceStatus(value)
-	return nil
 }
 func (ServiceStatus) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 type HealthCheckRequest struct {
-	XXX_unrecognized []byte `json:"-"`
 }
 
 func (m *HealthCheckRequest) Reset()                    { *m = HealthCheckRequest{} }
@@ -81,10 +63,11 @@ func (*HealthCheckRequest) ProtoMessage()               {}
 func (*HealthCheckRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 type HealthCheckResponse struct {
-	Message          *string              `protobuf:"bytes,1,req,name=message" json:"message,omitempty"`
-	Status           *ServiceStatus       `protobuf:"varint,2,req,name=status,enum=lightcheck.ServiceStatus,def=2" json:"status,omitempty"`
-	Dependencies     []*ServiceDependency `protobuf:"bytes,3,rep,name=dependencies" json:"dependencies,omitempty"`
-	XXX_unrecognized []byte               `json:"-"`
+	Message      string             `protobuf:"bytes,1,opt,name=message" json:"message,omitempty"`
+	Status       ServiceStatus      `protobuf:"varint,2,opt,name=status,enum=lightcheck.ServiceStatus" json:"status,omitempty"`
+	Dependencies *ServiceDependency `protobuf:"bytes,3,opt,name=dependencies" json:"dependencies,omitempty"`
+	Version      string             `protobuf:"bytes,4,opt,name=version" json:"version,omitempty"`
+	Commit       string             `protobuf:"bytes,5,opt,name=commit" json:"commit,omitempty"`
 }
 
 func (m *HealthCheckResponse) Reset()                    { *m = HealthCheckResponse{} }
@@ -92,23 +75,7 @@ func (m *HealthCheckResponse) String() string            { return proto.CompactT
 func (*HealthCheckResponse) ProtoMessage()               {}
 func (*HealthCheckResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
-const Default_HealthCheckResponse_Status ServiceStatus = ServiceStatus_DOWN
-
-func (m *HealthCheckResponse) GetMessage() string {
-	if m != nil && m.Message != nil {
-		return *m.Message
-	}
-	return ""
-}
-
-func (m *HealthCheckResponse) GetStatus() ServiceStatus {
-	if m != nil && m.Status != nil {
-		return *m.Status
-	}
-	return Default_HealthCheckResponse_Status
-}
-
-func (m *HealthCheckResponse) GetDependencies() []*ServiceDependency {
+func (m *HealthCheckResponse) GetDependencies() *ServiceDependency {
 	if m != nil {
 		return m.Dependencies
 	}
@@ -116,39 +83,17 @@ func (m *HealthCheckResponse) GetDependencies() []*ServiceDependency {
 }
 
 type ServiceDependency struct {
-	Name             *string        `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
-	Message          *string        `protobuf:"bytes,2,req,name=message" json:"message,omitempty"`
-	Status           *ServiceStatus `protobuf:"varint,3,req,name=status,enum=lightcheck.ServiceStatus,def=2" json:"status,omitempty"`
-	XXX_unrecognized []byte         `json:"-"`
+	Name    string        `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	Message string        `protobuf:"bytes,2,opt,name=message" json:"message,omitempty"`
+	Status  ServiceStatus `protobuf:"varint,3,opt,name=status,enum=lightcheck.ServiceStatus" json:"status,omitempty"`
+	Version string        `protobuf:"bytes,4,opt,name=version" json:"version,omitempty"`
+	Commit  string        `protobuf:"bytes,5,opt,name=commit" json:"commit,omitempty"`
 }
 
 func (m *ServiceDependency) Reset()                    { *m = ServiceDependency{} }
 func (m *ServiceDependency) String() string            { return proto.CompactTextString(m) }
 func (*ServiceDependency) ProtoMessage()               {}
 func (*ServiceDependency) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
-
-const Default_ServiceDependency_Status ServiceStatus = ServiceStatus_DOWN
-
-func (m *ServiceDependency) GetName() string {
-	if m != nil && m.Name != nil {
-		return *m.Name
-	}
-	return ""
-}
-
-func (m *ServiceDependency) GetMessage() string {
-	if m != nil && m.Message != nil {
-		return *m.Message
-	}
-	return ""
-}
-
-func (m *ServiceDependency) GetStatus() ServiceStatus {
-	if m != nil && m.Status != nil {
-		return *m.Status
-	}
-	return Default_ServiceDependency_Status
-}
 
 func init() {
 	proto.RegisterType((*HealthCheckRequest)(nil), "lightcheck.HealthCheckRequest")
@@ -157,93 +102,25 @@ func init() {
 	proto.RegisterEnum("lightcheck.ServiceStatus", ServiceStatus_name, ServiceStatus_value)
 }
 
-// Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
-
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion2
-
-// Client API for LightCheck service
-
-type LightCheckClient interface {
-	HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
-}
-
-type lightCheckClient struct {
-	cc *grpc.ClientConn
-}
-
-func NewLightCheckClient(cc *grpc.ClientConn) LightCheckClient {
-	return &lightCheckClient{cc}
-}
-
-func (c *lightCheckClient) HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
-	out := new(HealthCheckResponse)
-	err := grpc.Invoke(ctx, "/lightcheck.LightCheck/HealthCheck", in, out, c.cc, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// Server API for LightCheck service
-
-type LightCheckServer interface {
-	HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
-}
-
-func RegisterLightCheckServer(s *grpc.Server, srv LightCheckServer) {
-	s.RegisterService(&_LightCheck_serviceDesc, srv)
-}
-
-func _LightCheck_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HealthCheckRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LightCheckServer).HealthCheck(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/lightcheck.LightCheck/HealthCheck",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightCheckServer).HealthCheck(ctx, req.(*HealthCheckRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-var _LightCheck_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "lightcheck.LightCheck",
-	HandlerType: (*LightCheckServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "HealthCheck",
-			Handler:    _LightCheck_HealthCheck_Handler,
-		},
-	},
-	Streams: []grpc.StreamDesc{},
-}
-
 var fileDescriptor0 = []byte{
-	// 253 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0x92, 0xf0, 0x48, 0x4d, 0xcc,
-	0x29, 0xc9, 0x70, 0xce, 0x48, 0x4d, 0xce, 0x0e, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0xd1, 0x2b,
-	0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0xca, 0xc9, 0x4c, 0xcf, 0x28, 0x49, 0x06, 0x49, 0x28, 0x89,
-	0x70, 0x09, 0x61, 0xaa, 0x53, 0xea, 0x61, 0xe4, 0x12, 0x46, 0x11, 0x2e, 0x2e, 0xc8, 0xcf, 0x2b,
-	0x4e, 0x15, 0xe2, 0xe7, 0x62, 0xcf, 0x4d, 0x2d, 0x2e, 0x4e, 0x4c, 0x4f, 0x95, 0x60, 0x54, 0x60,
-	0xd2, 0xe0, 0x14, 0xd2, 0xe7, 0x62, 0x2b, 0x2e, 0x49, 0x2c, 0x29, 0x2d, 0x96, 0x60, 0x02, 0xf2,
-	0xf9, 0x8c, 0x24, 0xf5, 0x10, 0x66, 0xeb, 0x05, 0xa7, 0x16, 0x95, 0x65, 0x26, 0xa7, 0x06, 0x83,
-	0x15, 0x58, 0xb1, 0xb8, 0xf8, 0x87, 0xfb, 0x09, 0x19, 0x73, 0xf1, 0xa4, 0xa4, 0x16, 0xa4, 0xe6,
-	0xa5, 0xa4, 0xe6, 0x25, 0x67, 0xa6, 0x16, 0x4b, 0x30, 0x2b, 0x30, 0x6b, 0x70, 0x1b, 0xc9, 0x62,
-	0xd1, 0xe6, 0x02, 0x53, 0x56, 0xa9, 0x94, 0xcc, 0x25, 0x88, 0x21, 0x28, 0xc4, 0xc3, 0xc5, 0x92,
-	0x97, 0x98, 0x0b, 0x73, 0x08, 0x92, 0xcb, 0x98, 0xd0, 0x5c, 0xc6, 0x4c, 0x94, 0xcb, 0xb4, 0xf4,
-	0xb9, 0x78, 0x51, 0x84, 0x85, 0xd8, 0xb8, 0x98, 0x42, 0x03, 0x04, 0x18, 0x84, 0x38, 0xb8, 0xc0,
-	0x0a, 0x04, 0x98, 0x80, 0x56, 0x72, 0xb8, 0xb8, 0xba, 0x07, 0x39, 0xba, 0xb8, 0xba, 0x08, 0x30,
-	0x1b, 0xc5, 0x71, 0x71, 0xf9, 0x80, 0x8c, 0x04, 0x07, 0x91, 0x50, 0x00, 0x17, 0x37, 0x52, 0x88,
-	0x09, 0xc9, 0x21, 0x5b, 0x87, 0x19, 0xc2, 0x52, 0xf2, 0x38, 0xe5, 0x21, 0x41, 0xad, 0xc4, 0x00,
-	0x08, 0x00, 0x00, 0xff, 0xff, 0x58, 0xb8, 0x1c, 0x40, 0xc1, 0x01, 0x00, 0x00,
+	// 299 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x94, 0x52, 0xdb, 0x4a, 0xc3, 0x40,
+	0x14, 0x6c, 0x2e, 0xc6, 0x7a, 0x5a, 0x25, 0x1e, 0x45, 0x56, 0xc1, 0x0b, 0x79, 0x12, 0x1f, 0x22,
+	0xc6, 0x2f, 0x28, 0xa6, 0xe8, 0x83, 0x68, 0x49, 0x11, 0xdf, 0x84, 0x98, 0x1e, 0x9a, 0x60, 0x73,
+	0x31, 0xbb, 0x2d, 0xf8, 0x43, 0xfe, 0x92, 0xbf, 0x63, 0xb3, 0x4d, 0x30, 0x21, 0x16, 0xf4, 0x6d,
+	0xcf, 0xce, 0xcc, 0xd9, 0x19, 0x66, 0x81, 0xdd, 0x91, 0x3f, 0x13, 0xe1, 0x4d, 0x48, 0xc1, 0x9b,
+	0x47, 0xef, 0x73, 0xe2, 0xc2, 0xce, 0xf2, 0x54, 0xa4, 0x08, 0xb3, 0x68, 0x1a, 0x8a, 0xa0, 0x00,
+	0xac, 0x7d, 0xc0, 0x36, 0xcf, 0xfa, 0x52, 0x60, 0xaf, 0x71, 0xcd, 0xb3, 0x34, 0xe1, 0x84, 0x0c,
+	0x36, 0x63, 0xe2, 0xdc, 0x9f, 0x12, 0x53, 0xce, 0x94, 0xf3, 0x2d, 0xaf, 0x1a, 0xf1, 0x0a, 0x0c,
+	0x2e, 0x7c, 0x31, 0xe7, 0x4c, 0x5d, 0x02, 0x3b, 0xce, 0xa1, 0xfd, 0xf3, 0x88, 0x3d, 0xa6, 0x7c,
+	0x11, 0x05, 0x34, 0x96, 0x04, 0xaf, 0x24, 0xe2, 0x00, 0xfa, 0x13, 0xca, 0x28, 0x99, 0x50, 0x12,
+	0x44, 0xc4, 0x99, 0xb6, 0x14, 0xf6, 0x9c, 0xe3, 0x5f, 0x84, 0x6e, 0x45, 0xfb, 0xf0, 0x1a, 0x92,
+	0xc2, 0xcf, 0x82, 0x72, 0x1e, 0xa5, 0x09, 0xd3, 0x57, 0x7e, 0xca, 0x11, 0x0f, 0xc0, 0x08, 0xd2,
+	0x38, 0x8e, 0x04, 0xdb, 0x90, 0x40, 0x39, 0x59, 0x9f, 0x0a, 0xec, 0xb6, 0xb6, 0x22, 0x82, 0x9e,
+	0xf8, 0x71, 0x15, 0x4a, 0x9e, 0xeb, 0x59, 0xd5, 0x75, 0x59, 0xb5, 0xbf, 0x66, 0xfd, 0xb7, 0xd1,
+	0x8b, 0x4b, 0xd8, 0x6e, 0xac, 0x42, 0x03, 0xd4, 0xa7, 0x91, 0xd9, 0xc1, 0x2e, 0xe8, 0xee, 0xe3,
+	0xf3, 0x83, 0xa9, 0x62, 0x1f, 0xba, 0xee, 0xf0, 0xd6, 0x1b, 0xb8, 0x43, 0xd7, 0xd4, 0x9c, 0x17,
+	0x80, 0xfb, 0xc2, 0x86, 0x6c, 0x0c, 0x47, 0xd0, 0xab, 0x15, 0x88, 0x27, 0x75, 0x8b, 0xed, 0xc2,
+	0x8f, 0x4e, 0xd7, 0xe2, 0xab, 0xe6, 0xad, 0xce, 0xab, 0x21, 0x3f, 0xcf, 0xf5, 0x77, 0x00, 0x00,
+	0x00, 0xff, 0xff, 0x3b, 0x13, 0x6e, 0x0f, 0x58, 0x02, 0x00, 0x00,
 }
