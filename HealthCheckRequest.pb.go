@@ -19,6 +19,11 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
+import (
+	context "golang.org/x/net/context"
+	grpc "google.golang.org/grpc"
+)
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
@@ -100,6 +105,77 @@ func init() {
 	proto.RegisterType((*HealthCheckResponse)(nil), "lightcheck.HealthCheckResponse")
 	proto.RegisterType((*ServiceDependency)(nil), "lightcheck.ServiceDependency")
 	proto.RegisterEnum("lightcheck.ServiceStatus", ServiceStatus_name, ServiceStatus_value)
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion2
+
+// Client API for LightCheck service
+
+type LightCheckClient interface {
+	HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
+}
+
+type lightCheckClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewLightCheckClient(cc *grpc.ClientConn) LightCheckClient {
+	return &lightCheckClient{cc}
+}
+
+func (c *lightCheckClient) HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
+	out := new(HealthCheckResponse)
+	err := grpc.Invoke(ctx, "/lightcheck.LightCheck/HealthCheck", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for LightCheck service
+
+type LightCheckServer interface {
+	HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
+}
+
+func RegisterLightCheckServer(s *grpc.Server, srv LightCheckServer) {
+	s.RegisterService(&_LightCheck_serviceDesc, srv)
+}
+
+func _LightCheck_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthCheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LightCheckServer).HealthCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lightcheck.LightCheck/HealthCheck",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LightCheckServer).HealthCheck(ctx, req.(*HealthCheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _LightCheck_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "lightcheck.LightCheck",
+	HandlerType: (*LightCheckServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "HealthCheck",
+			Handler:    _LightCheck_HealthCheck_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{},
 }
 
 var fileDescriptor0 = []byte{
