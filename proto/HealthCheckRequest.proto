@@ -3,26 +3,27 @@ syntax = "proto3";
 package lightcheck;
 
 service LightCheck {
-    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {}
+    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {
+    }
 }
 
 message HealthCheckRequest {
 }
 
 message HealthCheckResponse {
-    string            message = 1;
-    ServiceStatus     status = 2;
-    ServiceDependency dependencies = 3;
-    string            version = 4;
-    string            commit = 5;
+    string message = 1;
+    ServiceStatus status = 2;
+    repeated ServiceDependency dependencies = 3;
+    string version = 4;
+    string commit = 5;
 }
 
 message ServiceDependency {
-    string        name = 1;
-    string        message = 2;
+    string name = 1;
+    string message = 2;
     ServiceStatus status = 3;
-    string        version = 4;
-    string        commit = 5;
+    string version = 4;
+    string commit = 5;
 }
 
 enum ServiceStatus {

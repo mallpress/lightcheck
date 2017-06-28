@@ -61,7 +61,7 @@ func (h healthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*Healt
 
 	resp := HealthCheckResponse{}
 	status := ServiceStatus_UP
-	resp.Status = &status
+	resp.Status = status
 	msg := ""
 	respChan := make(chan checkResponse, checkerCount)
 
@@ -87,7 +87,7 @@ func (h healthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*Healt
 				if !done {
 					msg := "Serivce timed out"
 					downStatus := ServiceStatus_DOWN
-					respChan <- checkResponse{tempCheck, &ServiceDependency{&tempCheck.Name, &msg, &downStatus, nil}, fmt.Errorf("Timed out waiting for something")}
+					respChan <- checkResponse{tempCheck, &ServiceDependency{tempCheck.Name, msg, downStatus, "", ""}, fmt.Errorf("Timed out waiting for something")}
 					done = true
 				}
 				doneMutex.Unlock()
@@ -101,11 +101,11 @@ func (h healthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*Healt
 		select {
 		case res := <-respChan:
 			if res.Check == h.primaryCheck {
-				status = *res.Response.Status
-				msg = *res.Response.Message
+				status = res.Response.Status
+				msg = res.Response.Message
 			} else {
 				responses = append(responses, res.Response)
-				if res.Check.Required && status == ServiceStatus_UP && (*res.Response.Status == ServiceStatus_DOWN || *res.Response.Status == ServiceStatus_DEGRADED) {
+				if res.Check.Required && status == ServiceStatus_UP && (res.Response.Status == ServiceStatus_DOWN || res.Response.Status == ServiceStatus_DEGRADED) {
 					status = ServiceStatus_DEGRADED
 				}
 			}
@@ -115,8 +115,8 @@ func (h healthChecker) HealthCheck(context.Context, *HealthCheckRequest) (*Healt
 			break
 		}
 	}
-	resp.Message = &msg
-	resp.Status = &status
+	resp.Message = msg
+	resp.Status = status
 	resp.Dependencies = responses
 	return &resp, nil
 }
